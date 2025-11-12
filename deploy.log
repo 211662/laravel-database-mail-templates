@@ -1,0 +1,239 @@
+🚀 TempEmail Production Deployment
+==================================
+
+[0;32m[INFO][0m Checking SSH connection to 15.235.203.107...
+[0;32m[INFO][0m SSH connection OK
+[0;32m[INFO][0m Checking Docker installation on server...
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-160-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Tue Nov 11 17:20:20 UTC 2025
+
+  System load:           0.24
+  Usage of /:            4.7% of 48.27GB
+  Memory usage:          8%
+  Swap usage:            0%
+  Processes:             107
+  Users logged in:       0
+  IPv4 address for ens3: 15.235.203.107
+  IPv6 address for ens3: 2402:1f00:8002:100::be6
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+8 updates can be applied immediately.
+8 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+Docker version 29.0.0, build 3d4129b
+Docker Compose version v2.40.3
+[0;32m[INFO][0m Creating remote directory...
+[0;32m[INFO][0m Copying files to server...
+building file list ... done
+./
+.editorconfig
+.env.example
+.gitattributes
+.gitignore
+.php-cs-fixer.cache
+.php-cs-fixer.dist.php
+.php_cs.cache
+CHANGELOG.md
+DEPLOYMENT.md
+Dockerfile
+Dockerfile.prod
+LICENSE.md
+README.md
+README_TEMPEMAIL.md
+UPGRADING.md
+composer.json
+deploy.log
+deploy.sh
+docker-compose.prod.yml
+docker-compose.yml
+phpunit.xml.dist
+setup-ssl.sh
+setup.sh
+.github/
+.github/FUNDING.yml
+.github/ISSUE_TEMPLATE/
+.github/ISSUE_TEMPLATE/config.yml
+.github/workflows/
+.github/workflows/php-cs-fixer.yml
+.github/workflows/run-tests.yml
+app/
+app/Events/
+app/Events/NewEmailReceived.php
+app/Http/
+app/Http/Controllers/
+app/Http/Controllers/Api/
+app/Http/Controllers/Api/DomainController.php
+app/Http/Controllers/Api/MessageController.php
+app/Http/Controllers/Api/TempEmailController.php
+app/Http/Controllers/Api/TemplateController.php
+app/Jobs/
+app/Jobs/CheckMailboxJob.php
+app/Jobs/CleanupExpiredEmailsJob.php
+app/Mail/
+app/Mail/DailyReport.php
+app/Mail/NewDomainAdded.php
+app/Mail/SystemAlert.php
+app/Models/
+app/Models/Attachment.php
+app/Models/Domain.php
+app/Models/InboxMessage.php
+app/Models/TempEmail.php
+app/Services/
+app/Services/MailReceiver.php
+config/
+config/temp-email.php
+database/
+database/migrations/
+database/migrations/2018_10_10_000000_create_mail_templates_table.php
+database/migrations/2025_11_11_000001_create_domains_table.php
+database/migrations/2025_11_11_000002_create_temp_emails_table.php
+database/migrations/2025_11_11_000003_create_inbox_messages_table.php
+database/migrations/2025_11_11_000004_create_attachments_table.php
+database/migrations/2025_11_11_000005_create_api_requests_table.php
+database/seeders/
+database/seeders/DatabaseSeeder.php
+database/seeders/DomainSeeder.php
+database/seeders/MailTemplateSeeder.php
+docker/
+docker/nginx/
+docker/nginx/nginx.conf
+docker/nginx/conf.d/
+docker/nginx/conf.d/default.conf
+docker/nginx/conf.d/production.conf
+public/
+public/index.html
+public/js/
+public/js/tempemail-api.js
+routes/
+routes/api.php
+src/
+src/MailTemplatesServiceProvider.php
+src/TemplateMailable.php
+src/TemplateMailableRenderer.php
+src/Exceptions/
+src/Exceptions/CannotRenderTemplateMailable.php
+src/Exceptions/MissingMailTemplate.php
+src/Interfaces/
+src/Interfaces/MailTemplateInterface.php
+src/Models/
+src/Models/MailTemplate.php
+tests/
+tests/CustomMailTemplateTest.php
+tests/MailTemplateModelTest.php
+tests/TemplateMailableTest.php
+tests/TestCase.php
+tests/stubs/
+tests/stubs/Mails/
+tests/stubs/Mails/BadLayoutMail.php
+tests/stubs/Mails/BasicMail.php
+tests/stubs/Mails/CustomTemplateModelMail.php
+tests/stubs/Mails/LayoutMail.php
+tests/stubs/Models/
+tests/stubs/Models/CustomMailTemplate.php
+tests/stubs/Models/LayoutMailTemplate.php
+
+sent 59941 bytes  received 1856 bytes  41198.00 bytes/sec
+total size is 162043  speedup is 2.62
+[0;32m[INFO][0m Setting up environment...
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-160-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Tue Nov 11 17:20:20 UTC 2025
+
+  System load:           0.24
+  Usage of /:            4.7% of 48.27GB
+  Memory usage:          8%
+  Swap usage:            0%
+  Processes:             107
+  Users logged in:       0
+  IPv4 address for ens3: 15.235.203.107
+  IPv6 address for ens3: 2402:1f00:8002:100::be6
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+8 updates can be applied immediately.
+8 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+✅ .env file created with secure passwords
+[0;32m[INFO][0m Starting Docker containers...
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Welcome to Ubuntu 22.04.5 LTS (GNU/Linux 5.15.0-160-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/pro
+
+ System information as of Tue Nov 11 17:20:20 UTC 2025
+
+  System load:           0.24
+  Usage of /:            4.7% of 48.27GB
+  Memory usage:          8%
+  Swap usage:            0%
+  Processes:             107
+  Users logged in:       0
+  IPv4 address for ens3: 15.235.203.107
+  IPv6 address for ens3: 2402:1f00:8002:100::be6
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+8 updates can be applied immediately.
+8 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+New release '24.04.3 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+Waiting for services to be ready...
+time="2025-11-11T17:20:43Z" level=warning msg="/var/www/tempemail/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+services.deploy.replicas: can't set container_name and queue as container name must be unique: invalid compose project
+Running migrations...
+time="2025-11-11T17:20:58Z" level=warning msg="/var/www/tempemail/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+services.deploy.replicas: can't set container_name and queue as container name must be unique: invalid compose project
+Seeding database...
+time="2025-11-11T17:20:58Z" level=warning msg="/var/www/tempemail/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+services.deploy.replicas: can't set container_name and queue as container name must be unique: invalid compose project
+Optimizing application...
+time="2025-11-11T17:20:59Z" level=warning msg="/var/www/tempemail/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+services.deploy.replicas: can't set container_name and queue as container name must be unique: invalid compose project
+time="2025-11-11T17:20:59Z" level=warning msg="/var/www/tempemail/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+services.deploy.replicas: can't set container_name and queue as container name must be unique: invalid compose project
+time="2025-11-11T17:20:59Z" level=warning msg="/var/www/tempemail/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+services.deploy.replicas: can't set container_name and queue as container name must be unique: invalid compose project
+time="2025-11-11T17:20:59Z" level=warning msg="/var/www/tempemail/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+services.deploy.replicas: can't set container_name and queue as container name must be unique: invalid compose project
+time="2025-11-11T17:20:59Z" level=warning msg="/var/www/tempemail/docker-compose.prod.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+services.deploy.replicas: can't set container_name and queue as container name must be unique: invalid compose project

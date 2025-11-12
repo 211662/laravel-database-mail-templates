@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TempEmail - Temporary Email Service</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <script src="/js/tempemail-api.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 { font-size: 48px; margin-bottom: 10px; }
+        .header p { font-size: 18px; opacity: 0.9; }
+        
+        .email-generator {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .email-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .email-input {
+            flex: 1;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f5f5f5;
+        }
+        .btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .inbox {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .inbox-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .message-list { list-style: none; }
+        .message-item {
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .message-item:hover {
+            background: #f5f5f5;
+            border-color: #667eea;
+        }
+        .message-item.unread {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+        .message-from {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .message-subject {
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .message-time {
+            font-size: 12px;
+            color: #999;
+        }
+        .two-fa-code {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        .domain-selector {
+            margin-bottom: 20px;
+        }
+        .domain-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            flex: 1;
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>📧 TempEmail</h1>
+                <p>Temporary Email Service - Protect Your Privacy</p>
+            </div>
+
+            <div class="email-generator">
+                <div class="domain-selector" v-if="domains.length > 0">
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Choose Domain:</label>
+                    <select v-model="selectedDomain">
+                        <option :value="null">Random Domain</option>
+                        <option v-for="domain in domains" :key="domain.id" :value="domain.id">
+                            @{{ domain.domain }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="email-display" v-if="currentEmail">
+                    <input 
+                        type="text" 
+                        class="email-input" 
+                        :value="currentEmail" 
+                        readonly
+                    >
+                    <button class="btn btn-success" @click="copyEmail">📋 Copy</button>
+                    <button class="btn btn-secondary" @click="checkNew">🔄 Refresh</button>
+                    <button class="btn btn-danger" @click="deleteEmail">🗑️ Delete</button>
+                </div>
+
+                <button 
+                    v-if="!currentEmail" 
+                    class="btn btn-primary" 
+                    style="width: 100%;"
+                    @click="generateEmail"
+                    :disabled="loading"
+                >
+                    {{ loading ? 'Generating...' : '✨ Generate New Email' }}
+                </button>
+
+                <div class="stats" v-if="emailInfo">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ emailInfo.unread_count || 0 }}</div>
+                        <div class="stat-label">Unread Messages</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ emailInfo.time_remaining || 'N/A' }}</div>
+                        <div class="stat-label">Time Remaining</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="inbox" v-if="currentEmail">
+                <div class="inbox-header">
+                    <h2>📬 Inbox</h2>
+                    <span>{{ messages.length }} message(s)</span>
+                </div>
+
+                <div v-if="loading" class="loading">
+                    <p>Loading messages...</p>
+                </div>
+
+                <div v-else-if="messages.length === 0" class="empty-state">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <h3>No messages yet</h3>
+                    <p>Your inbox is empty. Messages will appear here when they arrive.</p>
+                </div>
+
+                <ul v-else class="message-list">
+                    <li 
+                        v-for="message in messages" 
+                        :key="message.id"
+                        class="message-item"
+                        :class="{ unread: !message.is_read }"
+                        @click="viewMessage(message)"
+                    >
+                        <div class="message-from">
+                            {{ message.from_name || message.from_address }}
+                            <span v-if="message.two_fa_code" class="two-fa-code" @click.stop="copy2FA(message.two_fa_code)">
+                                🔐 {{ message.two_fa_code }}
+                            </span>
+                        </div>
+                        <div class="message-subject">{{ message.subject || '(No Subject)' }}</div>
+                        <div class="message-time">{{ formatDate(message.received_at) }}</div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    api: new TempEmailAPI('http://localhost/api/v1'),
+                    currentEmail: null,
+                    emailInfo: null,
+                    messages: [],
+                    domains: [],
+                    selectedDomain: null,
+                    loading: false,
+                    autoRefreshInterval: null,
+                };
+            },
+            mounted() {
+                this.loadDomains();
+                
+                // Auto-refresh every 30 seconds
+                this.autoRefreshInterval = setInterval(() => {
+                    if (this.currentEmail) {
+                        this.checkNew(true);
+                    }
+                }, 30000);
+            },
+            beforeUnmount() {
+                if (this.autoRefreshInterval) {
+                    clearInterval(this.autoRefreshInterval);
+                }
+            },
+            methods: {
+                async loadDomains() {
+                    try {
+                        const response = await this.api.getDomains();
+                        this.domains = response.data;
+                    } catch (error) {
+                        console.error('Failed to load domains:', error);
+                    }
+                },
+                async generateEmail() {
+                    this.loading = true;
+                    try {
+                        const response = await this.api.generateEmail(this.selectedDomain);
+                        this.currentEmail = response.data.email;
+                        this.emailInfo = response.data;
+                        await this.loadInbox();
+                    } catch (error) {
+                        alert('Failed to generate email: ' + error.message);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                async loadInbox() {
+                    if (!this.currentEmail) return;
+                    
+                    this.loading = true;
+                    try {
+                        const response = await this.api.getInbox(this.currentEmail);
+                        this.messages = response.data.messages;
+                        this.emailInfo = {
+                            ...this.emailInfo,
+                            unread_count: response.data.unread_count,
+                            time_remaining: response.data.time_remaining,
+                        };
+                    } catch (error) {
+                        console.error('Failed to load inbox:', error);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                async checkNew(silent = false) {
+                    if (!this.currentEmail) return;
+                    
+                    if (!silent) this.loading = true;
+                    try {
+                        await this.api.checkNewMessages(this.currentEmail);
+                        await this.loadInbox();
+                    } catch (error) {
+                        if (!silent) {
+                            alert('Failed to check for new messages: ' + error.message);
+                        }
+                    } finally {
+                        if (!silent) this.loading = false;
+                    }
+                },
+                async deleteEmail() {
+                    if (!confirm('Are you sure you want to delete this email?')) return;
+                    
+                    try {
+                        await this.api.deleteEmail(this.currentEmail);
+                        this.currentEmail = null;
+                        this.messages = [];
+                        this.emailInfo = null;
+                    } catch (error) {
+                        alert('Failed to delete email: ' + error.message);
+                    }
+                },
+                async viewMessage(message) {
+                    try {
+                        const response = await this.api.getMessage(message.id);
+                        // Open message in a new window or modal
+                        const win = window.open('', '_blank');
+                        win.document.write(response.data.body_html || '<pre>' + response.data.body_text + '</pre>');
+                        
+                        // Reload inbox to update read status
+                        await this.loadInbox();
+                    } catch (error) {
+                        alert('Failed to load message: ' + error.message);
+                    }
+                },
+                copyEmail() {
+                    navigator.clipboard.writeText(this.currentEmail);
+                    alert('Email copied to clipboard!');
+                },
+                copy2FA(code) {
+                    navigator.clipboard.writeText(code);
+                    alert('2FA code copied: ' + code);
+                },
+                formatDate(dateString) {
+                    const date = new Date(dateString);
+                    return date.toLocaleString();
+                },
+            },
+        }).mount('#app');
+    </script>
+</body>
+</html>

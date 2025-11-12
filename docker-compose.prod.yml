@@ -1,0 +1,184 @@
+version: '3.8'
+
+services:
+  # PHP Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: tempemail_app
+    restart: always
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_HOST=mysql
+      - DB_DATABASE=tempemail
+      - DB_USERNAME=tempemail
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - QUEUE_CONNECTION=redis
+    networks:
+      - tempemail
+    depends_on:
+      - mysql
+      - redis
+
+  # Nginx Web Server
+  nginx:
+    image: nginx:alpine
+    container_name: tempemail_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - ./docker/ssl:/etc/nginx/ssl
+    networks:
+      - tempemail
+    depends_on:
+      - app
+
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: tempemail_mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: tempemail
+      MYSQL_USER: tempemail
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - tempemail
+    command: --default-authentication-plugin=mysql_native_password
+
+  # Redis Cache & Queue
+  redis:
+    image: redis:7-alpine
+    container_name: tempemail_redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - tempemail
+
+  # Queue Worker 1
+  queue1:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: tempemail_queue1
+    restart: always
+    working_dir: /var/www/html
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - DB_DATABASE=tempemail
+      - DB_USERNAME=tempemail
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - QUEUE_CONNECTION=redis
+    networks:
+      - tempemail
+    depends_on:
+      - mysql
+      - redis
+
+  # Queue Worker 2
+  queue2:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: tempemail_queue2
+    restart: always
+    working_dir: /var/www/html
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - DB_DATABASE=tempemail
+      - DB_USERNAME=tempemail
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - QUEUE_CONNECTION=redis
+    networks:
+      - tempemail
+    depends_on:
+      - mysql
+      - redis
+
+  # Queue Worker 3
+  queue3:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: tempemail_queue3
+    restart: always
+    working_dir: /var/www/html
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - DB_DATABASE=tempemail
+      - DB_USERNAME=tempemail
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - QUEUE_CONNECTION=redis
+    networks:
+      - tempemail
+    depends_on:
+      - mysql
+      - redis
+
+  # Scheduler
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: tempemail_scheduler
+    restart: always
+    working_dir: /var/www/html
+    command: >
+      sh -c "while true; do
+        php artisan schedule:run >> /dev/null 2>&1
+        sleep 60
+      done"
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - DB_DATABASE=tempemail
+      - DB_USERNAME=tempemail
+      - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      - tempemail
+    depends_on:
+      - mysql
+
+networks:
+  tempemail:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
